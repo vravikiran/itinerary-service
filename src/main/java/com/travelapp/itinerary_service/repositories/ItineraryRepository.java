@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.travelapp.itinerary_service.entities.Itinerary;
 
 @Repository
-public interface ItineraryRepository extends MongoRepository<Itinerary, String>, ItineraryCustomRepository {
+public interface ItineraryRepository extends MongoRepository<Itinerary, Long>, ItineraryCustomRepository {
 	/*@Query("{ 'location': ?0,'active':?3,'isPredefined':?4,'isVehicleIncluded': ?1,'isStayIncluded': ?2 } ] }")
 	public List<Itinerary> findItinerariesByLocationAndIsVehicleIncluded(String location, boolean isVehicleIncluded,
 			boolean isStayIncluded, boolean active, boolean isPredefined);*/

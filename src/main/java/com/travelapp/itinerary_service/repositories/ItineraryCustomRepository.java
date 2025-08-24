@@ -8,7 +8,7 @@ import com.travelapp.itinerary_service.entities.Itinerary;
 public interface ItineraryCustomRepository {
 	public List<Itinerary> fetchItinerariesByDestinationType(String destinationType);
 
-	public List<Itinerary> fetchItinerariesByStayAndRoom(String stayId, String roomId);
+	public List<Itinerary> fetchItinerariesByStayAndRoom(Long stayId, int roomId);
 
 	public Itinerary updateItinerary(Map<String, Object> updatedFields, String id);
 

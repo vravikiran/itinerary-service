@@ -32,7 +32,7 @@ public class ItineraryCustomRepositoryImpl implements ItineraryCustomRepository 
 	}
 
 	@Override
-	public List<Itinerary> fetchItinerariesByStayAndRoom(String stayId, String roomId) {
+	public List<Itinerary> fetchItinerariesByStayAndRoom(Long stayId, int roomId) {
 		Query query = new Query(Criteria.where(Constants.ROOM_ID).is(roomId).and(Constants.STAY_ID).is(stayId).and(Constants.ACTIVE).is(true));
 		List<Itinerary> itineraries = mongoTemplate.find(query, Itinerary.class);
 		return itineraries;

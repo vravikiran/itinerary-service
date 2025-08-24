@@ -8,16 +8,17 @@ import com.travelapp.itinerary_service.services.ItineraryService;
 
 @Component
 public class DailyScheduler {
-	@Autowired
-	ItineraryService itineraryService;
+    @Autowired
+    ItineraryService itineraryService;
 
-	@Scheduled(cron = "0 0 2 * * *", zone = "Asia/Kolkata")
-	public void deleteCustomItrUntouched() {
-		itineraryService.deleteCustomItineariesUntouched();
-	}
+    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Kolkata")
+    public void deleteCustomItrUntouched() {
+        itineraryService.deleteCustomItinerariesUntouched();
+    }
 
-	@Scheduled(cron = "0 0 5 * * *", zone = "Asia/Kolkata")
-	public void archiveUnTouchedCustItrFromPastSixMonths() {
-		itineraryService.archiveUnTouchedCustItrFromPastSixMonths();
-	}
+    @Scheduled(cron = "0 0 5 * * *", zone = "Asia/Kolkata")
+    public void archiveUnTouchedCustomItrFromPastSixMonths() {
+        itineraryService.archiveUnTouchedCustomItrFromPastSixMonths();
+        ;
+    }
 }

@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class StayInfo {
-	private String stayId;
-	private String roomId;
+	private Long stayId;
+	private int roomId;
 	private double price;
 	private String stayName;
 	private int noOfRooms;

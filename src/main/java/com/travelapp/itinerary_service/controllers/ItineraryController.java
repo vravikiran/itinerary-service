@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,13 +40,13 @@ public class ItineraryController {
 	}
 
 	@GetMapping
-	public ResponseEntity<ItineraryDto> getItineraryById(@RequestParam String id) {
+	public ResponseEntity<ItineraryDto> getItineraryById(@RequestParam Long id) throws BadRequestException {
 		ItineraryDto itineraryDto = itineraryService.getItineraryById(id);
 		return ResponseEntity.ok(itineraryDto);
 	}
 
 	@PatchMapping
-	public ResponseEntity<String> deactivateItineraryById(@RequestParam String id) {
+	public ResponseEntity<String> deactivateItineraryById(@RequestParam Long id) {
 		itineraryService.deactivateItineraryById(id);
 		return ResponseEntity.ok().body("Itinerary deactivated successfully");
 	}
@@ -72,8 +73,8 @@ public class ItineraryController {
 	}
 
 	@GetMapping("/stayinfo")
-	public ResponseEntity<List<Itinerary>> findItinerariesByStayIdAndRoomId(@RequestParam String roomId,
-			@RequestParam String stayId) {
+	public ResponseEntity<List<Itinerary>> findItinerariesByStayIdAndRoomId(@RequestParam int roomId,
+			@RequestParam Long stayId) {
 		List<Itinerary> itineraries = itineraryService.findItinerariesByStayIdAndRoomId(roomId, stayId);
 		return ResponseEntity.ok(itineraries);
 	}
@@ -92,14 +93,14 @@ public class ItineraryController {
 	}
 
 	@PostMapping("/customize/stay")
-	public ResponseEntity<Itinerary> customizeItineraryWithupdatedStay(@RequestParam String itineraryId,
+	public ResponseEntity<Itinerary> customizeItineraryWithUpdatedStay(@RequestParam Long itineraryId,
 			@RequestParam long mobileno, @RequestBody StayInfo stayInfo) throws Exception {
-		Itinerary itinerary = itineraryService.customizeItineraryWithupdatedStay(stayInfo, mobileno, itineraryId);
+		Itinerary itinerary = itineraryService.customizeItineraryWithUpdatedStay(stayInfo, mobileno, itineraryId);
 		return ResponseEntity.ok(itinerary);
 	}
 
 	@PostMapping("/customize/vehicle")
-	public ResponseEntity<Itinerary> customizeItineraryWithUpdatedVehicleInfo(@RequestParam String itineraryId,
+	public ResponseEntity<Itinerary> customizeItineraryWithUpdatedVehicleInfo(@RequestParam Long itineraryId,
 			@RequestParam long mobileno, @RequestBody VehicleInfo vehicleInfo) throws Exception {
 		Itinerary itinerary = itineraryService.customizeItineraryWithUpdatedVehicleInfo(vehicleInfo, itineraryId,
 				mobileno);
@@ -113,7 +114,7 @@ public class ItineraryController {
 	}
 
 	@PostMapping("/customize/transfers")
-	public ResponseEntity<Itinerary> addTransfers(@RequestParam String itineraryId, @RequestParam long mobileno,
+	public ResponseEntity<Itinerary> addTransfers(@RequestParam Long itineraryId, @RequestParam long mobileno,
 			@RequestBody Set<Transfer> transfers) throws Exception {
 		Itinerary itinerary = itineraryService.addTransfersToItinerary(itineraryId, mobileno, transfers);
 		return ResponseEntity.ok(itinerary);

@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 public class ItineraryDto {
-	private String id;
+	private Long id;
 	private boolean isGuideIncluded = true;
 	private boolean isVehicleIncluded = false;
 	private boolean isStayIncluded = false;

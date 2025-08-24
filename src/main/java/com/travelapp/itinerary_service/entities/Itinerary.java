@@ -6,6 +6,7 @@ import java.util.Set;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,8 +16,10 @@ import com.travelapp.itinerary_service.util.MultiValueEnumValidator;
 @Document(collection = "Itinerary")
 @Data
 public class Itinerary {
+    @Transient
+    public static final String SEQUENCE_NAME = "itinerary_sequence";
     @Id
-    private String id;
+    private Long id;
     private boolean isGuideIncluded = true;
     private boolean isVehicleIncluded = false;
     private boolean isStayIncluded = false;
@@ -41,7 +44,7 @@ public class Itinerary {
     private LocalDate createdDate;
     private LocalDate updatedDate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String baseItineraryId;
+    private Long baseItineraryId;
     private String status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<Transfer> transfers;

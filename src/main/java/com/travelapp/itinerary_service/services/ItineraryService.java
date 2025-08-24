@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.travelapp.itinerary_service.dtos.*;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,48 +26,41 @@ public class ItineraryService {
 	ItineraryRepository itineraryRepository;
 
 	public Itinerary createItinerary(Itinerary itinerary) {
-		return itineraryRepository.insert(itinerary);
-	}
-
-	public ItineraryDto getItineraryById(String id) {
-		Itinerary itinerary = itineraryRepository.findById(id).get();
-		ItineraryDto itineraryDto = convertItineraryObjToDto(itinerary);
-		return itineraryDto;
-	}
-
-	public Itinerary deactivateItineraryById(String id) {
-		Itinerary itinerary = itineraryRepository.findById(id).get();
-		itinerary.setActive(false);
 		return itineraryRepository.save(itinerary);
 	}
 
+	public ItineraryDto getItineraryById(Long id) throws BadRequestException {
+		Itinerary itinerary = itineraryRepository.findById(id).orElseThrow(()->{
+           return new BadRequestException("Itinerary not found with given ID :: " + id);
+        });
+        return convertItineraryObjToDto(itinerary);
+	}
+
+	public void deactivateItineraryById(Long id) {
+		Itinerary itinerary = itineraryRepository.findById(id).orElseThrow();
+		itinerary.setActive(false);
+        itineraryRepository.save(itinerary);
+    }
+
 	public List<Itinerary> fetchItinerariesBySearchCriteria(String location, boolean isVehicleIncluded,
 			boolean isStayIncluded) {
-		List<Itinerary> itineraries = itineraryRepository.findItinerariesByLocation(location.toUpperCase(),
+		return itineraryRepository.findItinerariesByLocation(location.toUpperCase(),
 				isVehicleIncluded, isStayIncluded);
-		/*List<ItineraryDto> itineraryDtos = itineraries.stream().map(itinerary -> {
-			ItineraryDto itineraryDto = convertItineraryObjToDto(itinerary);
-			return itineraryDto;
-		}).collect(Collectors.toList());*/
-		return itineraries;
 	}
 
 	public List<Itinerary> fetchItinerariesByDestinationType(String destinationType) {
-		List<Itinerary> itineraries = itineraryRepository.fetchItinerariesByDestinationType(destinationType);
-		return itineraries;
+        return itineraryRepository.fetchItinerariesByDestinationType(destinationType);
 	}
 
 	public List<Itinerary> fetchItinerariesByVehicle(String vehicleId) {
-		List<Itinerary> itineraries = itineraryRepository.findItinerariesByVehicleId(vehicleId.toUpperCase());
-		return itineraries;
+        return itineraryRepository.findItinerariesByVehicleId(vehicleId.toUpperCase());
 	}
 
-	public List<Itinerary> findItinerariesByStayIdAndRoomId(String roomId, String stayId) {
-		List<Itinerary> itineraries = itineraryRepository.fetchItinerariesByStayAndRoom(stayId, roomId);
-		return itineraries;
+	public List<Itinerary> findItinerariesByStayIdAndRoomId(int roomId, Long stayId) {
+        return itineraryRepository.fetchItinerariesByStayAndRoom(stayId, roomId);
 	}
 
-	public List<Itinerary> updateVehiclePriceForItineraries(VehiclePriceUpdateDto vehiclePriceUpdateDto) {
+	public void updateVehiclePriceForItineraries(VehiclePriceUpdateDto vehiclePriceUpdateDto) {
 		List<Itinerary> itineraries = itineraryRepository
 				.findItinerariesByVehicleId(vehiclePriceUpdateDto.getVehicleId().toUpperCase());
 		List<Itinerary> updatedItineraries = itineraries.stream().map(itinerary -> {
@@ -74,14 +68,13 @@ public class ItineraryService {
 			return itinerary;
 		}).collect(Collectors.toList());
 		itineraryRepository.saveAll(updatedItineraries);
-		return updatedItineraries;
-	}
+    }
 
 	public void updateStayPricesForItineraries(StayRoomPriceUpdateDto stayRoomPriceUpdateDto) {
         Set<RoomPriceDto> roomPriceDtoList = stayRoomPriceUpdateDto.getRoomPriceDtoList();
         Long stayId = stayRoomPriceUpdateDto.getStayId();
         for(RoomPriceDto roomPriceDto : roomPriceDtoList) {
-            List<Itinerary> itineraries = itineraryRepository.fetchItinerariesByStayAndRoom(String.valueOf(stayId),String.valueOf(roomPriceDto.getRoomId()));
+            List<Itinerary> itineraries = itineraryRepository.fetchItinerariesByStayAndRoom(stayId,roomPriceDto.getRoomId());
             List<Itinerary> updatedItineraries = itineraries.stream().map(itinerary -> {
                 itinerary.getStayInfo().setPrice(roomPriceDto.getPrice());
                 return itinerary;
@@ -94,8 +87,8 @@ public class ItineraryService {
 		return itineraryRepository.updateItinerary(updatedFields, id);
 	}
 
-	public Itinerary customizeItineraryWithupdatedStay(StayInfo stayInfo, long mobileNo, String id) throws Exception {
-		Itinerary originalItinerary = itineraryRepository.findById(id).get();
+	public Itinerary customizeItineraryWithUpdatedStay(StayInfo stayInfo, long mobileNo, Long id) throws Exception {
+		Itinerary originalItinerary = itineraryRepository.findById(id).orElseThrow();
 		if (originalItinerary.isPredefined()) {
 			Itinerary updatedItinerary = ItineraryUtils.deepCopy(originalItinerary);
 			updatedItinerary.setStayInfo(stayInfo);
@@ -107,9 +100,8 @@ public class ItineraryService {
 			updatedItinerary.setBaseItineraryId(id);
 			itineraryRepository.insert(updatedItinerary);
 			return updatedItinerary;
-		} else if (!originalItinerary.isPredefined() && (originalItinerary.getStatus()
-				.equalsIgnoreCase(CustomItineraryStatusEnum.DRAFT.name())
-				|| originalItinerary.getStatus().equalsIgnoreCase(CustomItineraryStatusEnum.BOOKING_PENDING.name()))) {
+		} else if (originalItinerary.getStatus()
+                .equalsIgnoreCase(CustomItineraryStatusEnum.DRAFT.name()) || originalItinerary.getStatus().equalsIgnoreCase(CustomItineraryStatusEnum.BOOKING_PENDING.name())) {
 			originalItinerary.setStayInfo(stayInfo);
 			originalItinerary = itineraryRepository.save(originalItinerary);
 			return originalItinerary;
@@ -118,9 +110,9 @@ public class ItineraryService {
 		}
 	}
 
-	public Itinerary customizeItineraryWithUpdatedVehicleInfo(VehicleInfo vehicleInfo, String id, long mobileNo)
+	public Itinerary customizeItineraryWithUpdatedVehicleInfo(VehicleInfo vehicleInfo, Long id, long mobileNo)
 			throws Exception {
-		Itinerary originalItinerary = itineraryRepository.findById(id).get();
+		Itinerary originalItinerary = itineraryRepository.findById(id).orElseThrow();
 		if (originalItinerary.isPredefined()) {
 			Itinerary updatedItinerary = ItineraryUtils.deepCopy(originalItinerary);
 			updatedItinerary.setCustomerId(mobileNo);
@@ -133,9 +125,9 @@ public class ItineraryService {
 			updatedItinerary.setStatus(CustomItineraryStatusEnum.DRAFT.name());
 			updatedItinerary = itineraryRepository.insert(updatedItinerary);
 			return updatedItinerary;
-		} else if (!originalItinerary.isPredefined() && (originalItinerary.getStatus()
+		} else if (originalItinerary.getStatus()
 				.equalsIgnoreCase(CustomItineraryStatusEnum.DRAFT.name())
-				|| originalItinerary.getStatus().equalsIgnoreCase(CustomItineraryStatusEnum.BOOKING_PENDING.name()))) {
+				|| originalItinerary.getStatus().equalsIgnoreCase(CustomItineraryStatusEnum.BOOKING_PENDING.name())) {
 			originalItinerary.setVehicleinfo(vehicleInfo);
 			originalItinerary.setUpdatedDate(LocalDate.now());
 			if (!originalItinerary.isVehicleIncluded()) {
@@ -152,9 +144,9 @@ public class ItineraryService {
 		return itineraryRepository.findItinerariesByCustomerid(customerId);
 	}
 
-	public Itinerary addTransfersToItinerary(String itineraryId, long customerId, Set<Transfer> transfers)
+	public Itinerary addTransfersToItinerary(Long itineraryId, long customerId, Set<Transfer> transfers)
 			throws Exception {
-		Itinerary originalItinerary = itineraryRepository.findById(itineraryId).get();
+		Itinerary originalItinerary = itineraryRepository.findById(itineraryId).orElseThrow();
 		Itinerary updatedItinerary = null;
 		if (originalItinerary.isVehicleIncluded()) {
 			throw new Exception("Cannot add transfers, vehicle already included in the itinerary");
@@ -190,11 +182,11 @@ public class ItineraryService {
 
 	}
 
-	public void deleteCustomItineariesUntouched() {
+	public void deleteCustomItinerariesUntouched() {
 		itineraryRepository.deleteCustomItrUntouched();
 	}
 
-	public void archiveUnTouchedCustItrFromPastSixMonths() {
+	public void archiveUnTouchedCustomItrFromPastSixMonths() {
 		itineraryRepository.archiveUnTouchedCustItrFromPastSixMonths();
 	}
 

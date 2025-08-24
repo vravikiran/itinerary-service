@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.travelapp.itinerary_service.dtos.ItineraryDto;
-import com.travelapp.itinerary_service.dtos.StayPriceUpdateDto;
 import com.travelapp.itinerary_service.dtos.VehiclePriceUpdateDto;
 import com.travelapp.itinerary_service.entities.Itinerary;
 import com.travelapp.itinerary_service.entities.StayInfo;
@@ -84,13 +83,6 @@ public class ItineraryController {
 			@RequestBody VehiclePriceUpdateDto vehiclePriceUpdateDto) throws JsonProcessingException {
 		producerService.publishVehiclPriceUpdate(vehiclePriceUpdateDto);
 		return ResponseEntity.ok("vehicle price updated successfully");
-	}
-
-	@PostMapping("/stayprice/update")
-	public ResponseEntity<String> updateStayPriceForItineraries(@RequestBody StayPriceUpdateDto stayPriceUpdateDto)
-			throws JsonProcessingException {
-		producerService.publishStayPriceUpdate(stayPriceUpdateDto);
-		return ResponseEntity.ok("stay price updated successfully");
 	}
 
 	@PostMapping("/update")

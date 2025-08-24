@@ -16,4 +16,5 @@ public class Constants {
 	public static final String IS_VEHICLE_INCLUDED = "isVehicleIncluded";
 	public static final String IS_STAY_INCLUDED = "isStayIncluded";
 	public static final String LOCATION = "location";
+    public static final String STAY_ROOM_PRICE_UPDATES_TOPIC  ="stay_room_price_updates_topic";
 }

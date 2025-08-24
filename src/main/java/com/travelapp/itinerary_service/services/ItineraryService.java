@@ -7,16 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.travelapp.itinerary_service.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.travelapp.itinerary_service.dtos.AddressDto;
-import com.travelapp.itinerary_service.dtos.ItineraryDto;
-import com.travelapp.itinerary_service.dtos.RoomDto;
-import com.travelapp.itinerary_service.dtos.StayDetailDto;
-import com.travelapp.itinerary_service.dtos.StayPriceUpdateDto;
-import com.travelapp.itinerary_service.dtos.VehicleDetailDto;
-import com.travelapp.itinerary_service.dtos.VehiclePriceUpdateDto;
 import com.travelapp.itinerary_service.entities.Itinerary;
 import com.travelapp.itinerary_service.entities.StayInfo;
 import com.travelapp.itinerary_service.entities.Transfer;
@@ -83,17 +77,18 @@ public class ItineraryService {
 		return updatedItineraries;
 	}
 
-	public List<Itinerary> updateStayPricesForItineraries(StayPriceUpdateDto stayPriceUpdateDto) {
-		List<Itinerary> itineraries = itineraryRepository.fetchItinerariesByStayAndRoom(
-				stayPriceUpdateDto.getStayId().toUpperCase(), stayPriceUpdateDto.getRoomId().toUpperCase());
-		System.out.println("size of itineraries :: " + itineraries.size());
-		List<Itinerary> updatedItineraries = itineraries.stream().map(itinerary -> {
-			itinerary.getStayInfo().setPrice(stayPriceUpdateDto.getUpdatedPrice());
-			return itinerary;
-		}).collect(Collectors.toList());
-		itineraryRepository.saveAll(updatedItineraries);
-		return updatedItineraries;
-	}
+	public void updateStayPricesForItineraries(StayRoomPriceUpdateDto stayRoomPriceUpdateDto) {
+        Set<RoomPriceDto> roomPriceDtoList = stayRoomPriceUpdateDto.getRoomPriceDtoList();
+        Long stayId = stayRoomPriceUpdateDto.getStayId();
+        for(RoomPriceDto roomPriceDto : roomPriceDtoList) {
+            List<Itinerary> itineraries = itineraryRepository.fetchItinerariesByStayAndRoom(String.valueOf(stayId),String.valueOf(roomPriceDto.getRoomId()));
+            List<Itinerary> updatedItineraries = itineraries.stream().map(itinerary -> {
+                itinerary.getStayInfo().setPrice(roomPriceDto.getPrice());
+                return itinerary;
+            }).toList();
+            itineraryRepository.saveAll(updatedItineraries);
+        }
+    }
 
 	public Itinerary updateItinerary(String id, Map<String, Object> updatedFields) {
 		return itineraryRepository.updateItinerary(updatedFields, id);
